@@ -5,14 +5,11 @@ import Rule from '../components/Rule.astro';
 import { CATEGORIES } from '../content.config';
 import { formatMinutes } from '../lib/parseRecipe';
 
-/** Recipe of the week: editorial pick. Change the slug to feature another recipe. */
-const FEATURED_SLUG = 'bourekas-basar';
 const FALLBACK_EMOJI = '🍽️';
 
 const recipes = (await getCollection('recipes')).sort((a, b) =>
   a.data.title.localeCompare(b.data.title, 'he'),
 );
-const featured = recipes.find((r) => r.id === FEATURED_SLUG) ?? recipes[0]!;
 
 /** Same normalization the client script applies to the query. */
 const normalize = (s: string) =>
@@ -55,18 +52,6 @@ const searchText = (r: (typeof recipes)[number]) =>
       ))}
     </div>
 
-    <a class="week" href={`/recipes/${featured.id}`}>
-      <span class="week__text">
-        <span class="week__eyebrow">המתכון של השבוע</span>
-        <span class="week__title">{featured.data.title}</span>
-        <span class="week__meta">
-          {featured.data.category}
-          {featured.data.totalTime && <> · {formatMinutes(featured.data.totalTime)}</>}
-          {featured.data.family && <> · <b class="week__ours">שלנו ♥</b></>}
-        </span>
-      </span>
-      <span class="week__emoji" aria-hidden="true">{featured.data.emoji ?? FALLBACK_EMOJI}</span>
-    </a>
 
     <p class="status" id="status" aria-live="polite">{recipes.length} מתכונים</p>
 
@@ -228,61 +213,6 @@ const searchText = (r: (typeof recipes)[number]) =>
     border-color: var(--accent);
     color: #fff;
     font-weight: 700;
-  }
-
-  /* Recipe of the week */
-  .week {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 16px;
-    align-items: center;
-    padding: 18px 24px;
-    margin-block-end: 18px;
-    background: var(--tint);
-    border-radius: 16px;
-    color: inherit;
-    text-decoration: none;
-    transition: transform 150ms ease, box-shadow 150ms ease;
-  }
-
-  .week:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-  }
-
-  .week__text {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .week__eyebrow {
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.15em;
-    color: var(--amber);
-    margin-block-end: 4px;
-  }
-
-  .week__title {
-    font-size: 23px;
-    font-weight: 900;
-    line-height: 1.2;
-    color: var(--brown-deep);
-  }
-
-  .week__meta {
-    font-size: 14px;
-    color: var(--muted);
-    margin-block-start: 2px;
-  }
-
-  .week__ours {
-    color: var(--amber);
-  }
-
-  .week__emoji {
-    font-size: 42px;
-    line-height: 1;
   }
 
   /* Count + grid */
