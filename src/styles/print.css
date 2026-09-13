@@ -1,0 +1,214 @@
+/* Print (SPEC 3.4): one clean A4 page per recipe, black on white. */
+
+.print-footer {
+  display: none;
+}
+
+@page {
+  size: A4;
+  margin: 15mm;
+}
+
+@media print {
+  html {
+    font-size: 11pt;
+    line-height: 1.4;
+    background: #fff;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    padding-block-end: 8mm;
+  }
+
+  .site-header,
+  .site-footer,
+  .recipe[data-print] .recipe__actions,
+  .recipe[data-print] .recipe__back,
+  .pill,
+  .recipe[data-print] .recipe__rule,
+  .recipe[data-print] .checklist__box,
+  .recipe[data-print] .section-title__emoji,
+  .cook-bar,
+  .cook-lock,
+  .cook-ingredients > summary {
+    display: none !important;
+  }
+
+  html .site-main {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
+  }
+
+  .recipe[data-print] .recipe__header {
+    align-items: flex-start;
+    text-align: start;
+    margin-block-end: 6pt;
+    padding-block-end: 6pt;
+    border-block-end: 1px solid #000;
+  }
+
+  .recipe[data-print] .recipe__title {
+    color: #000;
+    font-size: 20pt;
+    margin-block-end: 3pt;
+  }
+
+  .recipe[data-print] .recipe__meta,
+  .recipe[data-print] .recipe__source {
+    color: #000;
+    font-size: 10pt;
+    justify-content: flex-start;
+    margin-block-end: 1pt;
+  }
+
+  .recipe[data-print] .recipe__meta-part + .recipe__meta-part::before {
+    color: #000;
+  }
+
+  html a {
+    color: #000;
+    text-decoration: none;
+  }
+
+  /* Two columns; recipes marked "single" stack instead */
+  .recipe[data-print] .recipe__body {
+    display: grid;
+    grid-template-columns: 36% 1fr;
+    gap: 8mm;
+    align-items: start;
+  }
+
+  .recipe[data-print] .recipe__body::before {
+    display: none;
+  }
+
+  .recipe[data-print='single'] .recipe__body {
+    display: block;
+  }
+
+  .recipe[data-print='single'] .recipe__steps {
+    margin-block-start: 8pt;
+  }
+
+  .recipe[data-print] .recipe__ingredients {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .recipe[data-print] .section-title {
+    color: #000;
+    font-size: 13pt;
+    margin-block-end: 4pt;
+    padding-block-end: 1pt;
+    border-block-end: 1px solid #000;
+  }
+
+  .recipe[data-print] .ingredients__group {
+    color: #000;
+    font-size: 10.5pt;
+    margin-block: 5pt 1pt;
+  }
+
+  .recipe[data-print] .ingredients__note {
+    color: #000;
+    font-size: 10pt;
+  }
+
+  .recipe[data-print] .checklist {
+    gap: 0;
+    margin: 0 0 4pt;
+  }
+
+  .recipe[data-print] .checklist__label {
+    min-height: 0;
+    padding-block: 1pt;
+    gap: 0;
+    display: block;
+    padding-inline-start: 9pt;
+    text-indent: -9pt;
+  }
+
+  .recipe[data-print] .checklist__text::before {
+    content: '• ';
+  }
+
+  .recipe[data-print] .checklist__box:checked + .checklist__text {
+    color: #000;
+    text-decoration: none;
+  }
+
+  .recipe[data-print] .steps {
+    gap: 0;
+    display: block;
+  }
+
+  .recipe[data-print] .steps__item {
+    margin: 0 0 4pt;
+    padding: 0;
+    padding-inline-start: 16pt;
+    line-height: 1.4;
+    font-size: 11pt;
+    background: none;
+    border: 0;
+    break-inside: avoid;
+  }
+
+  .recipe[data-print] .steps__item::before {
+    content: counter(step) '.';
+    background: none;
+    box-shadow: none;
+    color: #000;
+    width: auto;
+    height: auto;
+    line-height: inherit;
+    font-size: inherit;
+    inset-block-start: 0;
+    inset-inline-start: 0;
+    text-align: start;
+  }
+
+  .recipe[data-print] .recipe__notes {
+    margin-block-start: 8pt;
+    padding: 5pt 8pt 0;
+    background: none;
+    border: 1px solid #000;
+    border-radius: 0;
+    text-align: start;
+    break-inside: avoid;
+  }
+
+  .recipe[data-print] .recipe__notes-title {
+    color: #000;
+    font-size: 11pt;
+    margin-block-end: 2pt;
+  }
+
+  .recipe[data-print] .recipe__notes-body {
+    display: block;
+    max-width: none;
+  }
+
+  .recipe[data-print] .notes__list {
+    margin-block-end: 4pt;
+  }
+
+  .recipe[data-print] .print-footer {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    inset-inline: 0;
+    margin: 0;
+    text-align: center;
+    font-size: 8pt;
+    color: #000;
+  }
+}
