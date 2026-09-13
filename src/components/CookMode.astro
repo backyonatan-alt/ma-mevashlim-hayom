@@ -1,0 +1,187 @@
+---
+/**
+ * Cooking mode (SPEC 3.3): wake lock, big tappable step cards, check-off
+ * persisted in localStorage per recipe. Toggled by the #cook hash so the
+ * browser back button exits. Timers come in the next step.
+ */
+import '../styles/cook.css';
+---
+
+<div class="cook-bar" id="cook-bar" hidden>
+  <button class="cook-bar__btn cook-bar__btn--exit" id="cook-exit" type="button">יציאה</button>
+  <span class="cook-bar__progress" id="cook-progress" aria-live="polite"></span>
+  <button class="cook-bar__btn" id="cook-reset" type="button">איפוס</button>
+</div>
+<p class="cook-lock" id="cook-lock" hidden>☀️ המסך יישאר דלוק</p>
+
+<script>
+  const root = document.documentElement;
+  const article = document.querySelector<HTMLElement>('.recipe')!;
+  const slug = article.dataset.slug ?? location.pathname;
+  const storageKey = `cook:${slug}`;
+
+  const bar = document.getElementById('cook-bar')!;
+  const lockIndicator = document.getElementById('cook-lock')!;
+  const progress = document.getElementById('cook-progress')!;
+  const enterBtn = document.getElementById('cook-enter') as HTMLButtonElement;
+  const exitBtn = document.getElementById('cook-exit')!;
+  const resetBtn = document.getElementById('cook-reset')!;
+
+  const ingredients = document.querySelector<HTMLElement>('.recipe__ingredients')!;
+  const stepsSection = document.querySelector<HTMLElement>('.recipe__steps')!;
+  const steps = Array.from(document.querySelectorAll<HTMLLIElement>('.steps__item'));
+  const ingredientsHome = ingredients.parentElement!;
+
+  // Collapsible ingredients panel shown only in cooking mode; the real
+  // ingredients section is moved into it so checkbox state is kept.
+  const panel = document.createElement('details');
+  panel.className = 'cook-ingredients';
+  panel.hidden = true;
+  const summary = document.createElement('summary');
+  summary.textContent = 'מצרכים';
+  panel.append(summary);
+  stepsSection.prepend(panel);
+
+  let cooking = false;
+  let wakeLock: WakeLockSentinel | null = null;
+
+  // --- persistence ---
+  function loadDone(): Set<number> {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      const arr = raw ? (JSON.parse(raw) as unknown) : [];
+      return new Set(Array.isArray(arr) ? arr.filter((n) => typeof n === 'number') : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  function saveDone(done: Set<number>) {
+    try {
+      if (done.size === 0) localStorage.removeItem(storageKey);
+      else localStorage.setItem(storageKey, JSON.stringify([...done]));
+    } catch {
+      /* private mode etc. */
+    }
+  }
+
+  let done = loadDone();
+
+  function render() {
+    steps.forEach((li, i) => {
+      const isDone = done.has(i);
+      li.classList.toggle('is-done', isDone);
+      li.setAttribute('aria-pressed', String(isDone));
+    });
+    progress.textContent = `${done.size} / ${steps.length}`;
+  }
+
+  function toggleStep(i: number) {
+    if (!cooking) return;
+    if (done.has(i)) done.delete(i);
+    else done.add(i);
+    saveDone(done);
+    render();
+  }
+
+  // --- wake lock ---
+  async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) return;
+    try {
+      wakeLock = await navigator.wakeLock.request('screen');
+      lockIndicator.hidden = false;
+      wakeLock.addEventListener('release', () => {
+        lockIndicator.hidden = true;
+      });
+    } catch {
+      lockIndicator.hidden = true;
+    }
+  }
+
+  async function releaseWakeLock() {
+    try {
+      await wakeLock?.release();
+    } catch {
+      /* ignore */
+    }
+    wakeLock = null;
+    lockIndicator.hidden = true;
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (cooking && document.visibilityState === 'visible') void requestWakeLock();
+  });
+
+  // --- enter / exit ---
+  function enter() {
+    if (cooking) return;
+    cooking = true;
+    root.classList.add('is-cooking');
+    bar.hidden = false;
+    panel.hidden = false;
+    panel.open = false;
+    panel.append(ingredients);
+    steps.forEach((li) => {
+      li.setAttribute('role', 'button');
+      li.tabIndex = 0;
+    });
+    done = loadDone();
+    render();
+    void requestWakeLock();
+    window.scrollTo({ top: 0 });
+  }
+
+  function exit() {
+    if (!cooking) return;
+    cooking = false;
+    root.classList.remove('is-cooking');
+    bar.hidden = true;
+    panel.hidden = true;
+    ingredientsHome.prepend(ingredients);
+    steps.forEach((li) => {
+      li.removeAttribute('role');
+      li.removeAttribute('aria-pressed');
+      li.removeAttribute('tabindex');
+      li.classList.remove('is-done');
+    });
+    void releaseWakeLock();
+  }
+
+  function syncToHash() {
+    if (location.hash === '#cook') enter();
+    else exit();
+  }
+
+  enterBtn.addEventListener('click', () => {
+    history.pushState({ cook: true }, '', '#cook');
+    enter();
+  });
+
+  exitBtn.addEventListener('click', () => {
+    if (history.state && history.state.cook) history.back();
+    else {
+      history.replaceState(null, '', location.pathname + location.search);
+      exit();
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    done = new Set();
+    saveDone(done);
+    render();
+  });
+
+  steps.forEach((li, i) => {
+    li.addEventListener('click', () => toggleStep(i));
+    li.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleStep(i);
+      }
+    });
+  });
+
+  window.addEventListener('popstate', syncToHash);
+  window.addEventListener('hashchange', syncToHash);
+  syncToHash();
+</script>

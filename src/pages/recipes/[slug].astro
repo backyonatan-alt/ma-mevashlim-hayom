@@ -2,7 +2,9 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Rule from '../../components/Rule.astro';
-import { parseRecipeBody, inlineHtml, formatMinutes, type Block } from '../../lib/parseRecipe';
+import CookMode from '../../components/CookMode.astro';
+import '../../styles/print.css';
+import { parseRecipeBody, listItems, inlineHtml, formatMinutes, type Block } from '../../lib/parseRecipe';
 
 export async function getStaticPaths() {
   const recipes = await getCollection('recipes');
@@ -25,12 +27,19 @@ if (data.servings) meta.push(data.servings);
 
 const hasNotes = parsed.notes.some((b) => b.kind !== 'paragraph' || b.text.trim() !== '');
 
+// Print layout: long step lists with few ingredients stack better in one column.
+const ingredientChars = listItems(parsed.ingredients).join('').length;
+const stepChars = listItems(parsed.steps).join('').length;
+const printLayout = ingredientChars < stepChars * 0.25 ? 'single' : 'two';
+const siteUrl = Astro.site ? Astro.site.host : '';
+
 let ingredientIndex = 0;
 const ingredientId = () => `ing-${++ingredientIndex}`;
 ---
 
 <Base title={data.title} description={`${data.title} – ${data.category}`}>
-  <article class="recipe">
+  <article class="recipe" data-slug={recipe.id} data-print={printLayout}>
+    <CookMode />
     <header class="recipe__header">
       <span class="pill">{data.family ? '♥ המתכון שלנו' : data.category}</span>
       <h1 class="recipe__title">{data.title}</h1>
@@ -53,7 +62,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
         )}
       </p>}
       <div class="recipe__actions">
-        <button class="btn" type="button" disabled title="בקרוב">מצב בישול</button>
+        <button class="btn" id="cook-enter" type="button">🔥 מצב בישול</button>
         <button class="btn btn--secondary" type="button" onclick="window.print()">הדפסה</button>
       </div>
     </header>
@@ -128,6 +137,8 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
         </div>
       </aside>
     )}
+
+    <p class="print-footer">מה מבשלים היום{siteUrl && ` · ${siteUrl}`}</p>
 
     <p class="recipe__back">
       <a href="/">‹ חזרה לכל המתכונים</a>

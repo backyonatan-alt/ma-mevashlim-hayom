@@ -1,0 +1,210 @@
+/* Cooking mode: <html class="is-cooking"> toggles everything below */
+
+.cook-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: -2rem -1rem 1.25rem;
+  padding: 0.6rem 1rem;
+  background: var(--bg);
+  border-block-end: 1px solid var(--gold-soft);
+}
+
+.cook-bar__btn {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cook-bar__btn--exit {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cook-bar__progress {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent-strong);
+  white-space: nowrap;
+  direction: ltr;
+}
+
+.cook-lock {
+  margin: -0.5rem 0 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.cook-ingredients {
+  margin-block-end: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--gold-soft);
+  border-radius: var(--radius);
+}
+
+.cook-ingredients > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 0.85rem 1.1rem;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--accent);
+  min-height: var(--tap);
+}
+
+.cook-ingredients > summary::-webkit-details-marker {
+  display: none;
+}
+
+.cook-ingredients > summary::after {
+  content: '▾';
+  float: inline-end;
+  transition: transform 150ms;
+}
+
+.cook-ingredients[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+.cook-ingredients .recipe__ingredients {
+  padding: 0 1.1rem 0.5rem;
+}
+
+.cook-ingredients .recipe__ingredients .section-title {
+  display: none;
+}
+
+.cook-bar[hidden],
+.cook-ingredients[hidden] {
+  display: none;
+}
+
+/* --- state --- */
+
+html.is-cooking {
+  font-size: 20px;
+}
+
+html.is-cooking .site-header,
+html.is-cooking .site-footer,
+html.is-cooking .pill,
+html.is-cooking .recipe__rule,
+html.is-cooking .recipe__meta,
+html.is-cooking .recipe__source,
+html.is-cooking .recipe__actions,
+html.is-cooking .recipe__back,
+html.is-cooking .recipe__steps > .section-title {
+  display: none;
+}
+
+html.is-cooking .site-main {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 2rem 1rem 6rem;
+  min-height: 100dvh;
+}
+
+html.is-cooking .recipe__header {
+  margin-block-end: 1rem;
+}
+
+html.is-cooking .recipe__title {
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+html.is-cooking .recipe__body {
+  display: block;
+}
+
+html.is-cooking .recipe__body::before {
+  display: none;
+}
+
+html.is-cooking .recipe__ingredients {
+  position: static;
+  max-height: none;
+  overflow: visible;
+}
+
+html.is-cooking .steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+html.is-cooking .steps__item {
+  margin: 0;
+  padding: 1.1rem 3.4rem 1.1rem 1.1rem;
+  padding-inline-start: 3.4rem;
+  padding-inline-end: 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 26px;
+  line-height: 1.5;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 150ms, background-color 150ms;
+}
+
+html.is-cooking .steps__item::before {
+  inset-inline-start: 0.9rem;
+  inset-block-start: 1.05rem;
+  width: 34px;
+  height: 34px;
+  line-height: 34px;
+  font-size: 1.05rem;
+}
+
+html.is-cooking .steps__item.is-done {
+  opacity: 0.55;
+  background: var(--bg);
+}
+
+html.is-cooking .steps__item.is-done::before {
+  content: '✓';
+  background: var(--accent);
+  box-shadow: none;
+  color: #fff;
+}
+
+html.is-cooking .steps__item:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+html.is-cooking .recipe__notes {
+  margin-block-start: 2rem;
+}
+
+@media (min-width: 640px) {
+  .cook-bar {
+    margin: -3rem -2.5rem 1.5rem;
+    padding-inline: 2.5rem;
+  }
+
+  .is-cooking .steps {
+    max-width: 44rem;
+    margin-inline: auto;
+  }
+
+  .is-cooking .steps__item {
+    font-size: 24px;
+  }
+}
