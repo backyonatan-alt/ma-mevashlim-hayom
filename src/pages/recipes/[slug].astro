@@ -1,6 +1,7 @@
 ---
 import { getCollection, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Rule from '../../components/Rule.astro';
 import { parseRecipeBody, inlineHtml, formatMinutes, type Block } from '../../lib/parseRecipe';
 
 export async function getStaticPaths() {
@@ -31,9 +32,9 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 <Base title={data.title} description={`${data.title} – ${data.category}`}>
   <article class="recipe">
     <header class="recipe__header">
-      <span class="pill">{data.family ? 'המתכון שלנו' : data.category}</span>
+      <span class="pill">{data.family ? '♥ המתכון שלנו' : data.category}</span>
       <h1 class="recipe__title">{data.title}</h1>
-      <span class="recipe__rule" aria-hidden="true"></span>
+      <div class="recipe__rule"><Rule /></div>
       <p class="recipe__meta">
         {meta.map((part) => <span class="recipe__meta-part" set:html={inlineHtml(part)} />)}
       </p>
@@ -60,7 +61,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     <div class="recipe__body">
       <section class="recipe__ingredients" aria-labelledby="ingredients-title">
         <h2 class="section-title" id="ingredients-title">
-          <span class="section-title__emoji" aria-hidden="true">🥣</span>מצרכים
+          <span class="section-title__emoji" aria-hidden="true">🧺</span>מצרכים
         </h2>
         {parsed.ingredients.map((block: Block) =>
           block.kind === 'heading' ? (
@@ -152,7 +153,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     color: #fff;
     font-size: 0.85rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.08em;
     margin-block-end: 0.75rem;
   }
 
@@ -164,11 +165,6 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   }
 
   .recipe__rule {
-    display: block;
-    width: 60px;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--gold);
     margin-block-end: 1rem;
   }
 
@@ -204,9 +200,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     color: var(--accent);
     font-size: 1.4rem;
     font-weight: 700;
-    padding-block-end: 0.35rem;
-    border-block-end: 2px solid var(--gold);
-    margin-block-end: 1rem;
+    margin-block-end: 1.1rem;
   }
 
   .section-title__emoji {
@@ -240,7 +234,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     margin: 0 0 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 1.1rem;
   }
 
   .checklist__label {
@@ -248,7 +242,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     align-items: flex-start;
     gap: 0.7rem;
     min-height: var(--tap);
-    padding-block: 0.35rem;
+    padding-block: 0.2rem;
     cursor: pointer;
   }
 
@@ -259,7 +253,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     width: 20px;
     height: 20px;
     margin: 0.3em 0 0;
-    border: 1.5px solid var(--accent);
+    border: 1.5px solid var(--gold-strong);
     border-radius: 6px;
     background: var(--surface);
     cursor: pointer;
@@ -298,9 +292,9 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   .steps__item {
     counter-increment: step;
     position: relative;
-    padding-inline-start: 2.6rem;
-    margin-block-end: 1.1rem;
-    line-height: 1.7;
+    padding-inline-start: 2.7rem;
+    margin-block-end: 1.5rem;
+    line-height: 1.75;
     min-height: 28px;
   }
 
@@ -313,7 +307,8 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     height: 28px;
     border-radius: 50%;
     background: var(--gold);
-    color: var(--text);
+    box-shadow: inset 0 0 0 1.5px var(--gold-strong);
+    color: var(--accent-strong);
     font-weight: 700;
     font-size: 0.95rem;
     line-height: 28px;

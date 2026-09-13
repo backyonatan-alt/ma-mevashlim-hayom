@@ -1,0 +1,32 @@
+---
+/** Short gold rule with a terracotta diamond in the middle (the reference's title ornament). */
+---
+
+<span class="rule" aria-hidden="true"><i class="rule__gem"></i></span>
+
+<style>
+  .rule {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 140px;
+  }
+
+  .rule::before,
+  .rule::after {
+    content: '';
+    flex: 1;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 1px;
+  }
+
+  .rule__gem {
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    transform: rotate(45deg);
+    border-radius: 1px;
+  }
+</style>

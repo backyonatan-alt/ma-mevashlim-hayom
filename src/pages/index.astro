@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import { CATEGORIES } from '../content.config';
+import Rule from '../components/Rule.astro';
 import { formatMinutes } from '../lib/parseRecipe';
 
 const recipes = (await getCollection('recipes')).sort((a, b) =>
@@ -24,7 +25,7 @@ const searchText = (r: (typeof recipes)[number]) =>
 <Base hideHeader>
   <section class="hero">
     <h1 class="hero__title">מה מבשלים היום</h1>
-    <span class="hero__rule" aria-hidden="true"></span>
+    <div class="hero__rule"><Rule /></div>
     <p class="hero__sub">ספר המתכונים של יונתן וענבר</p>
   </section>
 
@@ -126,10 +127,6 @@ const searchText = (r: (typeof recipes)[number]) =>
   }
 
   .hero__rule {
-    width: 60px;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--gold);
     margin-block-end: 0.75rem;
   }
 

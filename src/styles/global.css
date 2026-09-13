@@ -1,5 +1,6 @@
 :root {
-  --bg: #faf6ef;
+  --page: #f3f1ec;
+  --bg: #fdf7e9;
   --surface: #ffffff;
   --text: #1f1b16;
   --muted: #6f655a;
@@ -8,9 +9,11 @@
   --accent-tint: #f6e6dc;
   --tint: #fbf1de;
   --gold: #e3c27a;
+  --gold-strong: #d1a94f;
   --gold-soft: #f1dfae;
   --border: #e6dfd2;
   --radius: 12px;
+  --frame-radius: 22px;
   --font: 'Heebo', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --tap: 44px;
   --content-max: 1000px;
@@ -25,9 +28,9 @@
 html {
   font-family: var(--font);
   font-size: 17px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text);
-  background: var(--bg);
+  background: var(--page);
   -webkit-text-size-adjust: 100%;
 }
 
@@ -36,6 +39,7 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background: var(--page);
 }
 
 a {
@@ -71,41 +75,41 @@ ol {
   margin-block: 0 1rem;
 }
 
-.site-header {
-  border-block-end: 1px solid var(--border);
-  background: var(--bg);
-}
-
+/* Slim bar above the framed card (recipe pages) */
 .site-header__inner {
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: 0.75rem 1rem;
+  padding: 0.6rem 1rem 0;
   display: flex;
   align-items: center;
-  min-height: 56px;
+  justify-content: center;
+  min-height: 44px;
 }
 
 .site-title {
   font-weight: 700;
-  font-size: 1.15rem;
-  color: var(--text);
+  font-size: 1rem;
+  color: var(--accent);
   text-decoration: none;
 }
 
+/* The cream card with the gold frame */
 .site-main {
   flex: 1;
-  width: 100%;
+  width: calc(100% - 1rem);
   max-width: var(--content-max);
-  margin-inline: auto;
-  padding: 3rem 1rem 2.5rem;
+  margin: 0.5rem auto 1rem;
+  padding: 2rem 1rem 2.25rem;
+  background: var(--bg);
+  border: 4px solid var(--gold);
+  border-radius: var(--frame-radius);
 }
 
 .site-footer {
-  border-block-start: 1px solid var(--border);
-  padding: 1rem;
+  padding: 0.25rem 1rem 1.25rem;
   text-align: center;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* Buttons */
@@ -154,12 +158,6 @@ input:focus-visible {
   outline-offset: 2px;
 }
 
-@media (min-width: 640px) {
-  .btn {
-    width: auto;
-  }
-}
-
 /* Numeric ranges and Hebrew-prefixed numbers ("20-30", "כ-30") never break mid-line */
 .num,
 .nobr {
@@ -174,4 +172,21 @@ input:focus-visible {
   clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  html {
+    font-size: 18px;
+  }
+
+  .btn {
+    width: auto;
+  }
+
+  .site-main {
+    width: calc(100% - 2rem);
+    margin-block: 1rem 1.5rem;
+    padding: 3rem 2.5rem 3rem;
+    border-width: 8px;
+  }
 }
