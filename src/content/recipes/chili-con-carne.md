@@ -1,6 +1,7 @@
 ---
 title: צ'ילי קון קרנה שילדים אוהבים
 category: בשר
+emoji: 🌶️
 tags: [ילדים, ארוחת ערב, סיר אחד]
 prepTime: 15
 totalTime: 75

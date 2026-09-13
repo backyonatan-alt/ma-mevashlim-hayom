@@ -1,6 +1,7 @@
 ---
 title: קציצות מושלמות לילדים
 category: בשר
+emoji: 🧆
 tags: [ילדים, לתמר, ארוחת ערב]
 prepTime: 45
 totalTime: 60

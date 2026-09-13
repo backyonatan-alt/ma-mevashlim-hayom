@@ -1,6 +1,7 @@
 ---
 title: וופל בלגי
 category: מאפים וארוחת בוקר
+emoji: 🧇
 tags: [בוקר, ילדים, מתוק, שבת]
 prepTime: 15
 totalTime: 30

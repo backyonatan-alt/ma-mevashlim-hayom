@@ -36,9 +36,11 @@
     display: none !important;
   }
 
+  html .site-frame,
   html .site-main {
     width: 100%;
     max-width: none;
+    min-height: 0;
     margin: 0;
     padding: 0;
     border: 0;

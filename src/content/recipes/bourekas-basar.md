@@ -1,6 +1,7 @@
 ---
 title: בורקס בשר
 category: בשר
+emoji: 🥟
 tags: [שבת, אירוח, בצק עלים]
 prepTime: 30
 totalTime: 60

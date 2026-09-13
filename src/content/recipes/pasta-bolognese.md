@@ -1,6 +1,7 @@
 ---
 title: פסטה בולונז
 category: בשר
+emoji: 🍝
 tags: [פסטה, ארוחת ערב, ילדים]
 prepTime: 30
 totalTime: 60

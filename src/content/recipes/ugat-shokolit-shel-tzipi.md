@@ -1,6 +1,7 @@
 ---
 title: עוגת שוקולית של ציפי
 category: עוגות
+emoji: 🍫
 tags: [שוקולית, קלה, ילדים, קערה אחת]
 prepTime: 10
 totalTime: 50

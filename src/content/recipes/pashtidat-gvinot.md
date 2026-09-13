@@ -1,6 +1,7 @@
 ---
 title: פשטידת גבינות רכה
 category: מרקים ופשטידות
+emoji: 🧀
 tags: [גבינות, קלה, ילדים, שבועות]
 prepTime: 10
 totalTime: 45

@@ -1,6 +1,7 @@
 ---
 title: עקיצת הדבורה לעצלנים
 category: עוגות
+emoji: 🍯
 tags: [אירוח, שמנת, שקדים]
 prepTime: 35
 totalTime: 180

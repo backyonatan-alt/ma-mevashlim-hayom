@@ -1,24 +1,28 @@
 ---
-/** Short gold rule with a terracotta diamond in the middle (the reference's title ornament). */
+/** Two gold bars flanking a terracotta diamond (design handoff divider). */
+interface Props {
+  bar?: number;
+}
+const { bar = 50 } = Astro.props;
 ---
 
-<span class="rule" aria-hidden="true"><i class="rule__gem"></i></span>
+<span class="rule" aria-hidden="true" style={`--bar:${bar}px`}><i class="rule__gem"></i></span>
 
 <style>
   .rule {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    width: 140px;
+    justify-content: center;
+    gap: 8px;
   }
 
   .rule::before,
   .rule::after {
     content: '';
-    flex: 1;
-    height: 2px;
+    width: var(--bar);
+    height: 3px;
     background: var(--gold);
-    border-radius: 1px;
+    border-radius: 2px;
   }
 
   .rule__gem {
@@ -27,6 +31,5 @@
     height: 8px;
     background: var(--accent);
     transform: rotate(45deg);
-    border-radius: 1px;
   }
 </style>

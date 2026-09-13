@@ -8,8 +8,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin: -2rem -1rem 1.25rem;
-  padding: 0.6rem 1rem;
+  margin: calc(-1 * var(--frame-pad-y)) calc(-1 * var(--frame-pad-x)) 1.25rem;
+  padding: 0.6rem var(--frame-pad-x);
   background: var(--bg);
   border-block-end: 1px solid var(--gold-soft);
 }
@@ -109,13 +109,9 @@ html.is-cooking .recipe__steps > .section-title {
   display: none;
 }
 
-html.is-cooking .site-main {
-  width: 100%;
-  margin: 0;
+html.is-cooking .site-frame {
   border: 0;
-  border-radius: 0;
-  padding: 2rem 1rem 6rem;
-  min-height: 100dvh;
+  padding: var(--frame-pad-y) var(--frame-pad-x) 6rem;
 }
 
 html.is-cooking .recipe__header {
@@ -195,8 +191,7 @@ html.is-cooking .recipe__notes {
 
 @media (min-width: 640px) {
   .cook-bar {
-    margin: -3rem -2.5rem 1.5rem;
-    padding-inline: 2.5rem;
+    margin-block-end: 1.5rem;
   }
 
   .is-cooking .steps {

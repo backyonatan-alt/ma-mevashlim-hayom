@@ -1,6 +1,7 @@
 ---
 title: מרק כתום מחמם ומחזק
 category: מרקים ופשטידות
+emoji: 🍲
 tags: [מרק, חורף, בריא, לתמר, טבעוני]
 prepTime: 15
 totalTime: 30

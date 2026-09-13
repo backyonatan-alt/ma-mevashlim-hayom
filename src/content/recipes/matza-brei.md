@@ -1,6 +1,7 @@
 ---
 title: מצה בריי
 category: מאפים וארוחת בוקר
+emoji: 🍞
 tags: [פסח, בוקר, גבינות, מהיר]
 prepTime: 10
 totalTime: 20

@@ -7,8 +7,8 @@ export const CATEGORIES = [
   'עוף',
   'עוגות',
   'מאפים וארוחת בוקר',
-  'לתמר',
   'מרקים ופשטידות',
+  'לתמר',
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
@@ -27,6 +27,8 @@ const recipes = defineCollection({
       source: z.string().trim().min(1, 'source חובה'),
       sourceUrl: z.string().url().optional(),
       author: z.string().trim().min(1).optional(),
+      // One emoji shown on the home-page card tile (fallback 🍽️).
+      emoji: z.string().trim().min(1).max(8).optional(),
     })
     // Unknown keys (e.g. an accidental image field) fail the build.
     .strict(),

@@ -1,6 +1,7 @@
 ---
 title: קציצות בריבת בצל
 category: בשר
+emoji: 🧅
 tags: [שבת, חג, אירוח]
 prepTime: 40
 totalTime: 90

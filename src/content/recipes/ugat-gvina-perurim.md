@@ -1,6 +1,7 @@
 ---
 title: עוגת גבינה עם פירורים
 category: עוגות
+emoji: 🍰
 tags: [גבינה, חג, שבועות, לילה במקרר]
 prepTime: 30
 totalTime: 60

@@ -1,6 +1,7 @@
 ---
 title: עוגת תפוחים שתמיד נגמרת
 category: עוגות
+emoji: 🍎
 tags: [תפוחים, קינמון, סתיו, קלה]
 prepTime: 10
 totalTime: 55

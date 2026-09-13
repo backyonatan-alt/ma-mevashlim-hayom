@@ -1,22 +1,32 @@
 :root {
-  --page: #f3f1ec;
-  --bg: #fdf7e9;
+  --page: #fdf4e3;
+  --bg: #fdf4e3;
   --surface: #ffffff;
-  --text: #1f1b16;
-  --muted: #6f655a;
-  --accent: #b5532b;
-  --accent-strong: #99431f;
-  --accent-tint: #f6e6dc;
-  --tint: #fbf1de;
-  --gold: #e3c27a;
-  --gold-strong: #d1a94f;
-  --gold-soft: #f1dfae;
-  --border: #e6dfd2;
+  --text: #3a3026;
+  --muted: #8a6f4d;
+  --muted-2: #8a7a62;
+  --muted-3: #6b5d48;
+  --placeholder: #a08b6c;
+  --accent: #cf5c36;
+  --accent-strong: #b6431f;
+  --accent-tint: #fbe6d2;
+  --brown-deep: #6b3410;
+  --amber: #a3611c;
+  --tint: #f7e3bd;
+  --tile: #fdf0d6;
+  --gold: #e8b64c;
+  --gold-strong: #d9a63a;
+  --gold-soft: #f0d9a0;
+  --border: #e8d9bd;
+  --border-2: #e3d5bd;
   --radius: 12px;
-  --frame-radius: 22px;
+  --card-radius: 18px;
+  --shadow: 0 2px 8px rgba(60, 40, 20, 0.08);
   --font: 'Heebo', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --tap: 44px;
   --content-max: 1000px;
+  --frame-pad-y: 24px;
+  --frame-pad-x: 16px;
 }
 
 *,
@@ -75,38 +85,43 @@ ol {
   margin-block: 0 1rem;
 }
 
-/* Slim bar above the framed card (recipe pages) */
+/* The mustard frame is the page itself (design handoff v2) */
+.site-frame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  border: 6px solid var(--gold);
+  padding: var(--frame-pad-y) var(--frame-pad-x) 40px;
+  background: var(--bg);
+}
+
 .site-header__inner {
   max-width: var(--content-max);
-  margin-inline: auto;
-  padding: 0.6rem 1rem 0;
+  width: 100%;
+  margin: -0.5rem auto 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .site-title {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
-  color: var(--accent);
+  color: var(--accent-strong);
   text-decoration: none;
 }
 
-/* The cream card with the gold frame */
 .site-main {
   flex: 1;
-  width: calc(100% - 1rem);
+  width: 100%;
   max-width: var(--content-max);
-  margin: 0.5rem auto 1rem;
-  padding: 2rem 1rem 2.25rem;
-  background: var(--bg);
-  border: 4px solid var(--gold);
-  border-radius: var(--frame-radius);
+  margin-inline: auto;
 }
 
 .site-footer {
-  padding: 0.25rem 1rem 1.25rem;
+  padding: 2rem 0 0;
   text-align: center;
   color: var(--muted);
   font-size: 0.85rem;
@@ -183,10 +198,8 @@ input:focus-visible {
     width: auto;
   }
 
-  .site-main {
-    width: calc(100% - 2rem);
-    margin-block: 1rem 1.5rem;
-    padding: 3rem 2.5rem 3rem;
-    border-width: 8px;
+  :root {
+    --frame-pad-y: 34px;
+    --frame-pad-x: 28px;
   }
 }

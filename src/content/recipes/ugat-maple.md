@@ -1,6 +1,7 @@
 ---
 title: עוגת מייפל
 category: עוגות
+emoji: 🍁
 tags: [שבת, פקאן, קלה]
 prepTime: 10
 totalTime: 60

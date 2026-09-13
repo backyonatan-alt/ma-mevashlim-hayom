@@ -1,6 +1,7 @@
 ---
 title: עוגת השוקולד הכי רכה וטעימה שיש
 category: עוגות
+emoji: 🎂
 tags: [שוקולד, שוקולית, ילדים, קלה]
 prepTime: 15
 totalTime: 60

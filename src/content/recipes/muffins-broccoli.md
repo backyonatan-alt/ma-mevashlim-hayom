@@ -1,6 +1,7 @@
 ---
 title: מאפינס ברוקולי לתינוקות
 category: לתמר
+emoji: 🥦
 tags: [תינוקות, ילדים, ברוקולי, 4 מצרכים]
 prepTime: 10
 totalTime: 30

@@ -1,6 +1,7 @@
 ---
 title: קציצות עוף אפויות
 category: עוף
+emoji: 🍗
 tags: [ילדים, לתמר, בריא, תנור]
 prepTime: 10
 totalTime: 45

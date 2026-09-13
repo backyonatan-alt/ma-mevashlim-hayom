@@ -1,6 +1,7 @@
 ---
 title: בייגל בשעה
 category: מאפים וארוחת בוקר
+emoji: 🥯
 tags: [לחם, שמרים, בוקר, שבת]
 prepTime: 30
 totalTime: 60

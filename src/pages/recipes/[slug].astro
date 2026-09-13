@@ -97,7 +97,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 
       <section class="recipe__steps" aria-labelledby="steps-title">
         <h2 class="section-title" id="steps-title">
-          <span class="section-title__emoji" aria-hidden="true">👨‍🍳</span>הכנה
+          <span class="section-title__emoji" aria-hidden="true">👩‍🍳</span>הכנה
         </h2>
         {parsed.steps.map((block: Block) =>
           block.kind === 'heading' ? (
@@ -169,8 +169,8 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   }
 
   .recipe__title {
-    color: var(--accent);
-    font-weight: 700;
+    color: var(--accent-strong);
+    font-weight: 900;
     font-size: 2.2rem;
     margin-block-end: 0.6rem;
   }
@@ -208,9 +208,9 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 
   /* Section headers */
   .section-title {
-    color: var(--accent);
+    color: var(--accent-strong);
     font-size: 1.4rem;
-    font-weight: 700;
+    font-weight: 900;
     margin-block-end: 1.1rem;
   }
 
@@ -319,8 +319,8 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     border-radius: 50%;
     background: var(--gold);
     box-shadow: inset 0 0 0 1.5px var(--gold-strong);
-    color: var(--accent-strong);
-    font-weight: 700;
+    color: var(--brown-deep);
+    font-weight: 900;
     font-size: 0.95rem;
     line-height: 28px;
     text-align: center;

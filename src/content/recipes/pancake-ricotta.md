@@ -1,6 +1,7 @@
 ---
 title: פנקייק ריקוטה לתינוקות
 category: לתמר
+emoji: 🥞
 tags: [תינוקות, ילדים, בוקר, בננה]
 prepTime: 5
 totalTime: 15
