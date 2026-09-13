@@ -4,7 +4,15 @@ import Base from '../../layouts/Base.astro';
 import Rule from '../../components/Rule.astro';
 import CookMode from '../../components/CookMode.astro';
 import '../../styles/print.css';
-import { parseRecipeBody, listItems, inlineHtml, formatMinutes, type Block } from '../../lib/parseRecipe';
+import {
+  parseRecipeBody,
+  listItems,
+  inlineHtml,
+  formatMinutes,
+  detectDurationSeconds,
+  formatSeconds,
+  type Block,
+} from '../../lib/parseRecipe';
 
 export async function getStaticPaths() {
   const recipes = await getCollection('recipes');
@@ -106,9 +114,19 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
             <p set:html={inlineHtml(block.text)} />
           ) : (
             <ol class="steps">
-              {block.items.map((item) => (
-                <li class="steps__item" set:html={inlineHtml(item)} />
-              ))}
+              {block.items.map((item) => {
+                const seconds = detectDurationSeconds(item);
+                return (
+                  <li class="steps__item" data-timer={seconds ?? undefined}>
+                    <span class="steps__text" set:html={inlineHtml(item)} />
+                    {seconds && (
+                      <button class="step-timer" type="button" data-seconds={seconds}>
+                        ⏱ {formatSeconds(seconds)}
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
             </ol>
           ),
         )}

@@ -203,3 +203,122 @@ html.is-cooking .recipe__notes {
     font-size: 24px;
   }
 }
+
+/* --- timers --- */
+
+.step-timer {
+  display: none;
+}
+
+html.is-cooking .step-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  margin-block-start: 0.6rem;
+  min-height: var(--tap);
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  background: var(--tile);
+  color: var(--brown-deep);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+html.is-cooking .steps__item.has-timer .step-timer {
+  background: var(--gold);
+}
+
+html.is-cooking .steps__text {
+  display: block;
+}
+
+html.is-cooking .steps__item.is-done .step-timer {
+  opacity: 0.6;
+}
+
+.timer-bar[hidden] {
+  display: none;
+}
+
+.timer-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  padding: 0.75rem var(--frame-pad-x) calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border-block-start: 3px solid var(--gold);
+  box-shadow: 0 -4px 16px rgba(60, 40, 20, 0.12);
+}
+
+.timer-bar__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+
+.timer-bar__label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.timer-bar__time {
+  font-size: 2.2rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--accent-strong);
+  direction: ltr;
+  align-self: flex-start;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.timer-bar__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex: none;
+  margin-inline-start: auto;
+}
+
+.timer-bar.is-paused .timer-bar__time {
+  color: var(--muted);
+}
+
+.timer-bar.is-finished {
+  background: var(--tint);
+}
+
+.timer-bar.is-finished .timer-bar__label {
+  color: var(--accent-strong);
+  font-size: 1.1rem;
+}
+
+.timer-bar.is-finished .timer-bar__time {
+  animation: timer-pulse 1s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timer-bar.is-finished .timer-bar__time {
+    animation: none;
+  }
+}
+
+html.is-cooking.has-timer .site-frame {
+  padding-block-end: 9rem;
+}

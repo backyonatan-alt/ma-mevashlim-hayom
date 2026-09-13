@@ -148,3 +148,47 @@ export function formatMinutes(min: number): string {
   if (m === 30) return `${hours} וחצי`;
   return `${hours} ו-${m} דק׳`;
 }
+
+const HEB = '\\u0590-\\u05FF';
+const WORD_NUMBERS: Record<string, number> = {
+  שתי: 2, שתיים: 2, שלוש: 3, ארבע: 4, חמש: 5, שש: 6, שבע: 7, שמונה: 8, תשע: 9, עשר: 10, עשרים: 20,
+};
+const NUM = '(\\d+(?:[.,]\\d+)?)(?:\\s?[-–]\\s?\\d+(?:[.,]\\d+)?)?'; // first number of a range
+
+/**
+ * First duration mentioned in a step, in seconds, or null.
+ * Understands "20 דקות", "20-30 דקות", "דקה", "30 שניות", "חצי שעה",
+ * "רבע שעה", "שעה וחצי", "שעתיים", "3 שעות", "שעה". A range uses its first number.
+ */
+export function detectDurationSeconds(text: string): number | null {
+  // A single Hebrew prefix letter (כחצי שעה, לשעה, ובשעתיים) is allowed before word forms.
+  const P = `(?<![${HEB}])[כלבוה]?`;
+  const patterns: Array<[RegExp, (m: RegExpMatchArray) => number]> = [
+    [new RegExp(`${NUM}\\s*(?:דקות|דק׳|דק')(?![${HEB}])`), (m) => parseFloat(m[1]!.replace(',', '.')) * 60],
+    [new RegExp(`${P}חצי דקה(?![${HEB}])`), () => 30],
+    [new RegExp(`(?<![${HEB}])(${Object.keys(WORD_NUMBERS).join('|')})\\s+דקות(?![${HEB}])`), (m) => WORD_NUMBERS[m[1]!]! * 60],
+    [new RegExp(`${P}דקה(?![${HEB}])`), () => 60],
+    [new RegExp(`${NUM}\\s*שניות(?![${HEB}])`), (m) => parseFloat(m[1]!.replace(',', '.'))],
+    [new RegExp(`${P}שעה וחצי(?![${HEB}])`), () => 90 * 60],
+    [new RegExp(`${P}שעתיים(?![${HEB}])`), () => 120 * 60],
+    [new RegExp(`${P}חצי שעה(?![${HEB}])`), () => 30 * 60],
+    [new RegExp(`${P}רבע שעה(?![${HEB}])`), () => 15 * 60],
+    [new RegExp(`${NUM}\\s*שעות(?![${HEB}])`), (m) => parseFloat(m[1]!.replace(',', '.')) * 3600],
+    [new RegExp(`${P}שעה(?![${HEB}])`), () => 60 * 60],
+  ];
+
+  let best: { index: number; seconds: number } | null = null;
+  for (const [re, toSeconds] of patterns) {
+    const m = re.exec(text);
+    if (!m || m.index === undefined) continue;
+    const seconds = Math.round(toSeconds(m));
+    if (seconds > 0 && (best === null || m.index < best.index)) best = { index: m.index, seconds };
+  }
+  return best ? best.seconds : null;
+}
+
+/** Short Hebrew label for a timer button: "30 שנ׳", "20 דק׳", "שעה וחצי". */
+export function formatSeconds(seconds: number): string {
+  if (seconds < 60) return `${seconds} שנ׳`;
+  return formatMinutes(Math.round(seconds / 60));
+}

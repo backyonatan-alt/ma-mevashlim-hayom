@@ -14,6 +14,18 @@ import '../styles/cook.css';
 </div>
 <p class="cook-lock" id="cook-lock" hidden>☀️ המסך יישאר דלוק</p>
 
+<div class="timer-bar" id="timer-bar" hidden role="region" aria-label="טיימר">
+  <div class="timer-bar__info">
+    <span class="timer-bar__label" id="timer-label"></span>
+    <span class="timer-bar__time" id="timer-time" aria-live="off">00:00</span>
+  </div>
+  <div class="timer-bar__actions">
+    <button class="cook-bar__btn" id="timer-toggle" type="button">השהיה</button>
+    <button class="cook-bar__btn" id="timer-reset" type="button">איפוס</button>
+    <button class="cook-bar__btn cook-bar__btn--exit" id="timer-close" type="button" aria-label="סגירת הטיימר">✕</button>
+  </div>
+</div>
+
 <script>
   const root = document.documentElement;
   const article = document.querySelector<HTMLElement>('.recipe')!;
@@ -144,6 +156,7 @@ import '../styles/cook.css';
       li.removeAttribute('tabindex');
       li.classList.remove('is-done');
     });
+    closeTimer();
     void releaseWakeLock();
   }
 
@@ -179,6 +192,176 @@ import '../styles/cook.css';
         toggleStep(i);
       }
     });
+  });
+
+  // --- timers (one at a time) ---
+  const timerBar = document.getElementById('timer-bar')!;
+  const timerLabel = document.getElementById('timer-label')!;
+  const timerTime = document.getElementById('timer-time')!;
+  const timerToggle = document.getElementById('timer-toggle')!;
+  const timerReset = document.getElementById('timer-reset')!;
+  const timerClose = document.getElementById('timer-close')!;
+
+  interface Timer {
+    total: number;
+    remaining: number; // seconds left while paused
+    endAt: number; // ms timestamp while running
+    running: boolean;
+    finished: boolean;
+    stepIndex: number;
+  }
+  let timer: Timer | null = null;
+  let tickHandle: number | null = null;
+  let audio: AudioContext | null = null;
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+  function formatClock(s: number) {
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    return h > 0 ? `${h}:${pad(m)}:${pad(sec)}` : `${pad(m)}:${pad(sec)}`;
+  }
+
+  function unlockAudio() {
+    try {
+      audio ??= new AudioContext();
+      if (audio.state === 'suspended') void audio.resume();
+    } catch {
+      audio = null;
+    }
+  }
+
+  function beep() {
+    if (!audio) return;
+    try {
+      const t0 = audio.currentTime;
+      for (let i = 0; i < 4; i++) {
+        const t = t0 + i * 0.4;
+        const osc = audio.createOscillator();
+        const gain = audio.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = i % 2 ? 1175 : 880;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.5, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.3);
+        osc.connect(gain).connect(audio.destination);
+        osc.start(t);
+        osc.stop(t + 0.32);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function vibrate() {
+    try {
+      navigator.vibrate?.([300, 150, 300, 150, 600]);
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function secondsLeft(): number {
+    if (!timer) return 0;
+    return timer.running ? Math.max(0, Math.ceil((timer.endAt - Date.now()) / 1000)) : timer.remaining;
+  }
+
+  function renderTimer() {
+    if (!timer) return;
+    const left = secondsLeft();
+    timerTime.textContent = formatClock(left);
+    timerToggle.textContent = timer.running ? 'השהיה' : 'המשך';
+    timerToggle.hidden = timer.finished;
+    timerBar.classList.toggle('is-finished', timer.finished);
+    timerBar.classList.toggle('is-paused', !timer.running && !timer.finished);
+    timerLabel.textContent = timer.finished ? '⏰ הזמן נגמר!' : `שלב ${timer.stepIndex + 1}`;
+    steps.forEach((li, i) => li.classList.toggle('has-timer', i === timer!.stepIndex));
+  }
+
+  function stopTicking() {
+    if (tickHandle !== null) {
+      clearInterval(tickHandle);
+      tickHandle = null;
+    }
+  }
+
+  function tick() {
+    if (!timer || !timer.running) return;
+    if (secondsLeft() <= 0) finishTimer();
+    renderTimer();
+  }
+
+  function finishTimer() {
+    if (!timer) return;
+    timer.running = false;
+    timer.remaining = 0;
+    timer.finished = true;
+    stopTicking();
+    beep();
+    vibrate();
+    renderTimer();
+  }
+
+  function startTimer(seconds: number, stepIndex: number) {
+    unlockAudio();
+    stopTicking();
+    timer = {
+      total: seconds,
+      remaining: seconds,
+      endAt: Date.now() + seconds * 1000,
+      running: true,
+      finished: false,
+      stepIndex,
+    };
+    timerBar.hidden = false;
+    root.classList.add('has-timer');
+    tickHandle = window.setInterval(tick, 250);
+    renderTimer();
+  }
+
+  function closeTimer() {
+    stopTicking();
+    timer = null;
+    timerBar.hidden = true;
+    root.classList.remove('has-timer');
+    steps.forEach((li) => li.classList.remove('has-timer'));
+  }
+
+  timerToggle.addEventListener('click', () => {
+    if (!timer || timer.finished) return;
+    if (timer.running) {
+      timer.remaining = secondsLeft();
+      timer.running = false;
+      stopTicking();
+    } else {
+      timer.endAt = Date.now() + timer.remaining * 1000;
+      timer.running = true;
+      tickHandle = window.setInterval(tick, 250);
+    }
+    renderTimer();
+  });
+
+  timerReset.addEventListener('click', () => {
+    if (!timer) return;
+    startTimer(timer.total, timer.stepIndex);
+  });
+
+  timerClose.addEventListener('click', closeTimer);
+
+  steps.forEach((li, i) => {
+    const btn = li.querySelector<HTMLButtonElement>('.step-timer');
+    if (!btn) return;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const seconds = Number(btn.dataset.seconds);
+      if (seconds > 0) startTimer(seconds, i);
+    });
+    btn.addEventListener('keydown', (e) => e.stopPropagation());
+  });
+
+  // Catch up after the tab was in the background (timers there are throttled).
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') tick();
   });
 
   window.addEventListener('popstate', syncToHash);
