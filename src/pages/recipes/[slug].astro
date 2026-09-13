@@ -16,7 +16,8 @@ const { recipe } = Astro.props;
 const { data } = recipe;
 const parsed = parseRecipeBody(recipe.body ?? '', recipe.id);
 
-const meta: string[] = [data.category];
+// The pill above the title already shows the category for non-family recipes.
+const meta: string[] = data.family ? [data.category] : [];
 if (data.prepTime) meta.push(`הכנה: ${formatMinutes(data.prepTime)}`);
 if (data.totalTime) meta.push(`סה״כ: ${formatMinutes(data.totalTime)}`);
 if (data.servings) meta.push(data.servings);
@@ -30,13 +31,15 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 <Base title={data.title} description={`${data.title} – ${data.category}`}>
   <article class="recipe">
     <header class="recipe__header">
+      <span class="pill">{data.family ? 'המתכון שלנו' : data.category}</span>
       <h1 class="recipe__title">{data.title}</h1>
+      <span class="recipe__rule" aria-hidden="true"></span>
       <p class="recipe__meta">
-        {meta.map((part) => <span class="recipe__meta-part">{part}</span>)}
+        {meta.map((part) => <span class="recipe__meta-part" set:html={inlineHtml(part)} />)}
       </p>
-      <p class="recipe__source">
+      {(data.family ? data.author : true) && <p class="recipe__source">
         {data.family ? (
-          <span class="badge">המתכון שלנו</span>
+          <span>מאת: {data.author}</span>
         ) : (
           <>
             מקור:{' '}
@@ -47,7 +50,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
             )}
           </>
         )}
-      </p>
+      </p>}
       <div class="recipe__actions">
         <button class="btn" type="button" disabled title="בקרוב">מצב בישול</button>
         <button class="btn btn--secondary" type="button" onclick="window.print()">הדפסה</button>
@@ -56,7 +59,9 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 
     <div class="recipe__body">
       <section class="recipe__ingredients" aria-labelledby="ingredients-title">
-        <h2 id="ingredients-title">מצרכים</h2>
+        <h2 class="section-title" id="ingredients-title">
+          <span class="section-title__emoji" aria-hidden="true">🥣</span>מצרכים
+        </h2>
         {parsed.ingredients.map((block: Block) =>
           block.kind === 'heading' ? (
             <h3 class="ingredients__group">{block.text}</h3>
@@ -81,7 +86,9 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
       </section>
 
       <section class="recipe__steps" aria-labelledby="steps-title">
-        <h2 id="steps-title">הכנה</h2>
+        <h2 class="section-title" id="steps-title">
+          <span class="section-title__emoji" aria-hidden="true">👨‍🍳</span>הכנה
+        </h2>
         {parsed.steps.map((block: Block) =>
           block.kind === 'heading' ? (
             <h3>{block.text}</h3>
@@ -95,27 +102,31 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
             </ol>
           ),
         )}
-
-        {hasNotes && (
-          <aside class="recipe__notes" aria-labelledby="notes-title">
-            <h2 id="notes-title">הערות</h2>
-            {parsed.notes.map((block: Block) =>
-              block.kind === 'heading' ? (
-                <h3>{block.text}</h3>
-              ) : block.kind === 'paragraph' ? (
-                <p set:html={inlineHtml(block.text)} />
-              ) : (
-                <ul class="notes__list">
-                  {block.items.map((item) => (
-                    <li set:html={inlineHtml(item)} />
-                  ))}
-                </ul>
-              ),
-            )}
-          </aside>
-        )}
       </section>
     </div>
+
+    {hasNotes && (
+      <aside class="recipe__notes" aria-labelledby="notes-title">
+        <h2 class="recipe__notes-title" id="notes-title">
+          <span aria-hidden="true">💡</span> הערות
+        </h2>
+        <div class="recipe__notes-body">
+          {parsed.notes.map((block: Block) =>
+            block.kind === 'heading' ? (
+              <h3>{block.text}</h3>
+            ) : block.kind === 'paragraph' ? (
+              <p set:html={inlineHtml(block.text)} />
+            ) : (
+              <ul class="notes__list">
+                {block.items.map((item) => (
+                  <li set:html={inlineHtml(item)} />
+                ))}
+              </ul>
+            ),
+          )}
+        </div>
+      </aside>
+    )}
 
     <p class="recipe__back">
       <a href="/">‹ חזרה לכל המתכונים</a>
@@ -124,14 +135,41 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
 </Base>
 
 <style>
+  /* Header */
   .recipe__header {
-    padding-block-end: 1.25rem;
-    border-block-end: 1px solid var(--border);
-    margin-block-end: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-block-end: 2.5rem;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 0.2em 0.9em;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    margin-block-end: 0.75rem;
   }
 
   .recipe__title {
-    margin-block-end: 0.35rem;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-block-end: 0.6rem;
+  }
+
+  .recipe__rule {
+    display: block;
+    width: 60px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gold);
+    margin-block-end: 1rem;
   }
 
   .recipe__meta {
@@ -139,6 +177,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
     margin-block-end: 0.35rem;
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 0.35rem 0.5rem;
   }
 
@@ -149,32 +188,41 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   }
 
   .recipe__source {
-    margin-block-end: 1rem;
-  }
-
-  .badge {
-    display: inline-block;
-    padding: 0.1em 0.7em;
-    border-radius: 999px;
-    background: var(--accent-tint);
-    color: var(--accent-strong);
-    font-weight: 500;
-    font-size: 0.95rem;
+    color: var(--muted);
+    margin-block-end: 1.25rem;
   }
 
   .recipe__actions {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+    width: 100%;
   }
 
+  /* Section headers */
+  .section-title {
+    color: var(--accent);
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding-block-end: 0.35rem;
+    border-block-end: 2px solid var(--gold);
+    margin-block-end: 1rem;
+  }
+
+  .section-title__emoji {
+    margin-inline-end: 0.4em;
+  }
+
+  /* Columns */
   .recipe__body {
     display: grid;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
+  /* Ingredients */
   .ingredients__group {
-    margin-block: 1rem 0.25rem;
+    margin-block: 1rem 0.5rem;
+    color: var(--accent-strong);
   }
 
   .ingredients__group:first-of-type {
@@ -189,67 +237,114 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   .checklist {
     list-style: none;
     padding: 0;
-    margin: 0 0 0.5rem;
-  }
-
-  .checklist__item + .checklist__item {
-    border-block-start: 1px solid var(--border);
+    margin: 0 0 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
   }
 
   .checklist__label {
     display: flex;
     align-items: flex-start;
-    gap: 0.75rem;
+    gap: 0.7rem;
     min-height: var(--tap);
-    padding-block: 0.55rem;
+    padding-block: 0.35rem;
     cursor: pointer;
   }
 
   .checklist__box {
+    appearance: none;
+    -webkit-appearance: none;
     flex: none;
-    width: 22px;
-    height: 22px;
-    margin: 0.2em 0 0;
-    accent-color: var(--accent);
+    width: 20px;
+    height: 20px;
+    margin: 0.3em 0 0;
+    border: 1.5px solid var(--accent);
+    border-radius: 6px;
+    background: var(--surface);
     cursor: pointer;
+    display: grid;
+    place-content: center;
+  }
+
+  .checklist__box::before {
+    content: '';
+    width: 11px;
+    height: 11px;
+    transform: scale(0);
+    transition: transform 120ms ease-in-out;
+    background: var(--accent);
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  }
+
+  .checklist__box:checked::before {
+    transform: scale(1);
   }
 
   .checklist__box:checked + .checklist__text {
     color: var(--muted);
     text-decoration: line-through;
-    text-decoration-color: var(--border);
+    text-decoration-color: var(--gold);
   }
 
+  /* Steps */
   .steps {
-    padding-inline-start: 1.6rem;
+    list-style: none;
+    padding: 0;
     margin: 0;
+    counter-reset: step;
   }
 
   .steps__item {
-    padding-inline-start: 0.35rem;
-    margin-block-end: 0.9rem;
+    counter-increment: step;
+    position: relative;
+    padding-inline-start: 2.6rem;
+    margin-block-end: 1.1rem;
     line-height: 1.7;
+    min-height: 28px;
   }
 
-  .steps__item::marker {
-    color: var(--accent);
+  .steps__item::before {
+    content: counter(step);
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0.1em;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--text);
     font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 28px;
+    text-align: center;
   }
 
+  /* Notes band */
   .recipe__notes {
-    margin-block-start: 1.5rem;
-    padding: 1rem 1.1rem 0.25rem;
+    margin-block-start: 3rem;
+    padding: 1.25rem 1.25rem 0.75rem;
     background: var(--tint);
-    border: 1px solid var(--border);
+    border: 1px solid var(--gold-soft);
     border-radius: var(--radius);
+    text-align: center;
   }
 
-  .recipe__notes h2 {
-    font-size: 1.05rem;
+  .recipe__notes-title {
+    font-size: 1.1rem;
+    color: var(--accent);
+    margin-block-end: 0.6rem;
+  }
+
+  .recipe__notes-body {
+    display: inline-block;
+    text-align: start;
+    max-width: 44rem;
   }
 
   .notes__list {
     padding-inline-start: 1.2rem;
+    margin-block-end: 0.5rem;
   }
 
   .recipe__back {
@@ -260,20 +355,36 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
   @media (min-width: 640px) {
     .recipe__actions {
       flex-direction: row;
+      justify-content: center;
+      width: auto;
     }
   }
 
   @media (min-width: 900px) {
+    .recipe__title {
+      font-size: 3rem;
+    }
+
     .recipe__body {
-      grid-template-columns: minmax(16rem, 1fr) 2fr;
-      gap: 3rem;
+      grid-template-columns: minmax(16rem, 2fr) 3fr;
+      gap: 4rem;
       align-items: start;
+      position: relative;
+    }
+
+    /* dotted divider between the columns, as in the reference */
+    .recipe__body::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-start: calc(40% - 0.2rem);
+      border-inline-start: 2px dotted var(--gold-soft);
     }
 
     .recipe__ingredients {
       position: sticky;
-      top: 1rem;
-      max-height: calc(100dvh - 2rem);
+      top: 1.5rem;
+      max-height: calc(100dvh - 3rem);
       overflow-y: auto;
       padding-inline-end: 0.5rem;
     }

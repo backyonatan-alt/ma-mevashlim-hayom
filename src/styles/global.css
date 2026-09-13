@@ -6,12 +6,14 @@
   --accent: #b5532b;
   --accent-strong: #99431f;
   --accent-tint: #f6e6dc;
-  --tint: #f3ecdf;
+  --tint: #fbf1de;
+  --gold: #e3c27a;
+  --gold-soft: #f1dfae;
   --border: #e6dfd2;
   --radius: 12px;
   --font: 'Heebo', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
   --tap: 44px;
-  --content-max: 68rem;
+  --content-max: 1000px;
 }
 
 *,
@@ -95,7 +97,7 @@ ol {
   width: 100%;
   max-width: var(--content-max);
   margin-inline: auto;
-  padding: 1.25rem 1rem 2.5rem;
+  padding: 3rem 1rem 2.5rem;
 }
 
 .site-footer {
