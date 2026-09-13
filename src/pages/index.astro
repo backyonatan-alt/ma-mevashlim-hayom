@@ -1,0 +1,293 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { CATEGORIES } from '../content.config';
+import { formatMinutes } from '../lib/parseRecipe';
+
+const recipes = (await getCollection('recipes')).sort((a, b) =>
+  a.data.title.localeCompare(b.data.title, 'he'),
+);
+
+/** Same normalization the client script applies to the query. */
+const normalize = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[֑-ׇ]/g, '')
+    .replace(/["'״׳]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const searchText = (r: (typeof recipes)[number]) =>
+  normalize([r.data.title, r.data.category, ...r.data.tags].join(' '));
+---
+
+<Base hideHeader>
+  <section class="hero">
+    <h1 class="hero__title">מה מבשלים היום</h1>
+    <span class="hero__rule" aria-hidden="true"></span>
+    <p class="hero__sub">ספר המתכונים של יונתן וענבר</p>
+  </section>
+
+  <form class="search" role="search" onsubmit="return false">
+    <label class="visually-hidden" for="search">חיפוש מתכון</label>
+    <input
+      class="search__input"
+      id="search"
+      type="search"
+      placeholder="חיפוש לפי שם, תגית או קטגוריה…"
+      autocomplete="off"
+      enterkeyhint="search"
+    />
+  </form>
+
+  <div class="chips" role="group" aria-label="סינון לפי קטגוריה">
+    <button class="chip" type="button" data-cat="" aria-pressed="true">הכל</button>
+    {CATEGORIES.map((cat) => (
+      <button class="chip" type="button" data-cat={cat} aria-pressed="false">{cat}</button>
+    ))}
+  </div>
+
+  <p class="status" id="status" aria-live="polite">{recipes.length} מתכונים</p>
+
+  <ul class="cards" id="cards">
+    {recipes.map((r) => (
+      <li class="card" data-category={r.data.category} data-search={searchText(r)}>
+        <a class="card__link" href={`/recipes/${r.id}`}>
+          <span class="card__title">{r.data.title}</span>
+          <span class="card__meta">
+            <span>{r.data.category}</span>
+            {r.data.totalTime && <span class="card__time">{formatMinutes(r.data.totalTime)}</span>}
+            {r.data.family && <span class="card__badge">שלנו</span>}
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <p class="empty" id="empty" hidden>לא נמצאו מתכונים. נסו מילה אחרת או קטגוריה אחרת.</p>
+</Base>
+
+<script>
+  const input = document.getElementById('search') as HTMLInputElement;
+  const status = document.getElementById('status')!;
+  const empty = document.getElementById('empty')!;
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>('.chip'));
+  const cards = Array.from(document.querySelectorAll<HTMLLIElement>('.card'));
+  let category = '';
+
+  const normalize = (s: string) =>
+    s
+      .toLowerCase()
+      .replace(/[֑-ׇ]/g, '')
+      .replace(/["'״׳]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  function apply() {
+    const q = normalize(input.value);
+    let shown = 0;
+    for (const card of cards) {
+      const ok =
+        (!category || card.dataset.category === category) &&
+        (!q || (card.dataset.search ?? '').includes(q));
+      card.hidden = !ok;
+      if (ok) shown++;
+    }
+    status.textContent =
+      shown === cards.length ? `${shown} מתכונים` : shown === 1 ? 'מתכון אחד' : `${shown} מתכונים`;
+    empty.hidden = shown > 0;
+  }
+
+  input.addEventListener('input', apply);
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      category = chip.dataset.cat ?? '';
+      for (const c of chips) c.setAttribute('aria-pressed', String(c === chip));
+      apply();
+    });
+  }
+  // Browsers restore the field value on back navigation; keep the list in sync.
+  apply();
+</script>
+
+<style>
+  .hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-block-end: 1.75rem;
+  }
+
+  .hero__title {
+    color: var(--accent);
+    font-size: 2.2rem;
+    margin-block-end: 0.6rem;
+  }
+
+  .hero__rule {
+    width: 60px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--gold);
+    margin-block-end: 0.75rem;
+  }
+
+  .hero__sub {
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .search {
+    margin-block-end: 1rem;
+  }
+
+  .search__input {
+    width: 100%;
+    min-height: 52px;
+    padding: 0.6rem 1rem;
+    font: inherit;
+    font-size: 1.05rem;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .search__input::placeholder {
+    color: var(--muted);
+  }
+
+  .search__input:focus {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 3px var(--accent-tint);
+  }
+
+  .chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-block: 0.25rem 0.5rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    flex: none;
+    min-height: 44px;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .chip[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .status {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-block: 0.5rem 0.75rem;
+  }
+
+  .cards {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .card__link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 72px;
+    padding: 0.9rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .card__link:hover,
+  .card__link:focus-visible {
+    border-color: var(--accent);
+  }
+
+  .card__title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    line-height: 1.3;
+  }
+
+  .card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .card__time::before {
+    content: '·';
+    color: var(--accent);
+    margin-inline-end: 0.5rem;
+  }
+
+  .card__badge {
+    padding: 0.05em 0.6em;
+    border-radius: 999px;
+    background: var(--gold);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.8rem;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding-block: 2rem;
+  }
+
+  @media (min-width: 640px) {
+    .cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .chips {
+      flex-wrap: wrap;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .hero__title {
+      font-size: 3rem;
+    }
+
+    .cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+</style>

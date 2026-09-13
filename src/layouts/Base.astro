@@ -2,10 +2,12 @@
 interface Props {
   title?: string;
   description?: string;
+  /** Home page renders its own hero title, so the header bar is hidden. */
+  hideHeader?: boolean;
 }
 
 const SITE_NAME = 'מה מבשלים היום';
-const { title, description = 'ספר המתכונים המשפחתי של יונתן וענבר' } = Astro.props;
+const { title, description = 'ספר המתכונים המשפחתי של יונתן וענבר', hideHeader = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE_NAME}` : SITE_NAME;
 import '../styles/global.css';
 ---
@@ -27,11 +29,13 @@ import '../styles/global.css';
     <title>{fullTitle}</title>
   </head>
   <body>
-    <header class="site-header">
-      <div class="site-header__inner">
-        <a class="site-title" href="/">{SITE_NAME}</a>
-      </div>
-    </header>
+    {!hideHeader && (
+      <header class="site-header">
+        <div class="site-header__inner">
+          <a class="site-title" href="/">{SITE_NAME}</a>
+        </div>
+      </header>
+    )}
     <main class="site-main">
       <slot />
     </main>
