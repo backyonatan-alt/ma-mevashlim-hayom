@@ -42,10 +42,20 @@ import '../styles/global.css';
     <title>{fullTitle}</title>
   </head>
   <body>
+    <script>
+      // Back keeps the home page's search/scroll when we came from it; shared links fall back to "/".
+      document.getElementById('back-btn')?.addEventListener('click', (e) => {
+        if (document.referrer.startsWith(location.origin) && history.length > 1) {
+          e.preventDefault();
+          history.back();
+        }
+      });
+    </script>
     <div class="site-frame">
       {!hideHeader && (
         <header class="site-header">
           <div class="site-header__inner">
+            <a class="back-btn" id="back-btn" href="/">‹ חזרה</a>
             <a class="site-title" href="/">{SITE_NAME}</a>
           </div>
         </header>

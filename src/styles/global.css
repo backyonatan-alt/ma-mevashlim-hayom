@@ -100,15 +100,39 @@ ol {
   max-width: var(--content-max);
   width: 100%;
   margin: -0.5rem auto 1rem;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 40px;
+  min-height: 44px;
+}
+
+.back-btn {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  min-height: var(--tap);
+  padding: 0 0.85rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  background: var(--surface);
+  color: var(--accent-strong);
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.back-btn:hover {
+  background: var(--tile);
 }
 
 .site-title {
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--accent-strong);
   text-decoration: none;
 }
