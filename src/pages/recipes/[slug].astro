@@ -1,0 +1,281 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { parseRecipeBody, inlineHtml, formatMinutes, type Block } from '../../lib/parseRecipe';
+
+export async function getStaticPaths() {
+  const recipes = await getCollection('recipes');
+  return recipes.map((recipe) => ({ params: { slug: recipe.id }, props: { recipe } }));
+}
+
+interface Props {
+  recipe: CollectionEntry<'recipes'>;
+}
+
+const { recipe } = Astro.props;
+const { data } = recipe;
+const parsed = parseRecipeBody(recipe.body ?? '', recipe.id);
+
+const meta: string[] = [data.category];
+if (data.prepTime) meta.push(`הכנה: ${formatMinutes(data.prepTime)}`);
+if (data.totalTime) meta.push(`סה״כ: ${formatMinutes(data.totalTime)}`);
+if (data.servings) meta.push(data.servings);
+
+const hasNotes = parsed.notes.some((b) => b.kind !== 'paragraph' || b.text.trim() !== '');
+
+let ingredientIndex = 0;
+const ingredientId = () => `ing-${++ingredientIndex}`;
+---
+
+<Base title={data.title} description={`${data.title} – ${data.category}`}>
+  <article class="recipe">
+    <header class="recipe__header">
+      <h1 class="recipe__title">{data.title}</h1>
+      <p class="recipe__meta">
+        {meta.map((part) => <span class="recipe__meta-part">{part}</span>)}
+      </p>
+      <p class="recipe__source">
+        {data.family ? (
+          <span class="badge">המתכון שלנו</span>
+        ) : (
+          <>
+            מקור:{' '}
+            {data.sourceUrl ? (
+              <a href={data.sourceUrl} rel="noopener noreferrer" target="_blank">{data.source}</a>
+            ) : (
+              <span>{data.source}</span>
+            )}
+          </>
+        )}
+      </p>
+      <div class="recipe__actions">
+        <button class="btn" type="button" disabled title="בקרוב">מצב בישול</button>
+        <button class="btn btn--secondary" type="button" onclick="window.print()">הדפסה</button>
+      </div>
+    </header>
+
+    <div class="recipe__body">
+      <section class="recipe__ingredients" aria-labelledby="ingredients-title">
+        <h2 id="ingredients-title">מצרכים</h2>
+        {parsed.ingredients.map((block: Block) =>
+          block.kind === 'heading' ? (
+            <h3 class="ingredients__group">{block.text}</h3>
+          ) : block.kind === 'paragraph' ? (
+            <p class="ingredients__note" set:html={inlineHtml(block.text)} />
+          ) : (
+            <ul class="checklist">
+              {block.items.map((item) => {
+                const id = ingredientId();
+                return (
+                  <li class="checklist__item">
+                    <label class="checklist__label" for={id}>
+                      <input class="checklist__box" type="checkbox" id={id} />
+                      <span class="checklist__text" set:html={inlineHtml(item)} />
+                    </label>
+                  </li>
+                );
+              })}
+            </ul>
+          ),
+        )}
+      </section>
+
+      <section class="recipe__steps" aria-labelledby="steps-title">
+        <h2 id="steps-title">הכנה</h2>
+        {parsed.steps.map((block: Block) =>
+          block.kind === 'heading' ? (
+            <h3>{block.text}</h3>
+          ) : block.kind === 'paragraph' ? (
+            <p set:html={inlineHtml(block.text)} />
+          ) : (
+            <ol class="steps">
+              {block.items.map((item) => (
+                <li class="steps__item" set:html={inlineHtml(item)} />
+              ))}
+            </ol>
+          ),
+        )}
+
+        {hasNotes && (
+          <aside class="recipe__notes" aria-labelledby="notes-title">
+            <h2 id="notes-title">הערות</h2>
+            {parsed.notes.map((block: Block) =>
+              block.kind === 'heading' ? (
+                <h3>{block.text}</h3>
+              ) : block.kind === 'paragraph' ? (
+                <p set:html={inlineHtml(block.text)} />
+              ) : (
+                <ul class="notes__list">
+                  {block.items.map((item) => (
+                    <li set:html={inlineHtml(item)} />
+                  ))}
+                </ul>
+              ),
+            )}
+          </aside>
+        )}
+      </section>
+    </div>
+
+    <p class="recipe__back">
+      <a href="/">‹ חזרה לכל המתכונים</a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .recipe__header {
+    padding-block-end: 1.25rem;
+    border-block-end: 1px solid var(--border);
+    margin-block-end: 1.5rem;
+  }
+
+  .recipe__title {
+    margin-block-end: 0.35rem;
+  }
+
+  .recipe__meta {
+    color: var(--muted);
+    margin-block-end: 0.35rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+  }
+
+  .recipe__meta-part + .recipe__meta-part::before {
+    content: '·';
+    color: var(--accent);
+    margin-inline-end: 0.5rem;
+  }
+
+  .recipe__source {
+    margin-block-end: 1rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.1em 0.7em;
+    border-radius: 999px;
+    background: var(--accent-tint);
+    color: var(--accent-strong);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .recipe__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .recipe__body {
+    display: grid;
+    gap: 2rem;
+  }
+
+  .ingredients__group {
+    margin-block: 1rem 0.25rem;
+  }
+
+  .ingredients__group:first-of-type {
+    margin-block-start: 0.25rem;
+  }
+
+  .ingredients__note {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .checklist {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.5rem;
+  }
+
+  .checklist__item + .checklist__item {
+    border-block-start: 1px solid var(--border);
+  }
+
+  .checklist__label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    min-height: var(--tap);
+    padding-block: 0.55rem;
+    cursor: pointer;
+  }
+
+  .checklist__box {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    margin: 0.2em 0 0;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .checklist__box:checked + .checklist__text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+
+  .steps {
+    padding-inline-start: 1.6rem;
+    margin: 0;
+  }
+
+  .steps__item {
+    padding-inline-start: 0.35rem;
+    margin-block-end: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .steps__item::marker {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .recipe__notes {
+    margin-block-start: 1.5rem;
+    padding: 1rem 1.1rem 0.25rem;
+    background: var(--tint);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .recipe__notes h2 {
+    font-size: 1.05rem;
+  }
+
+  .notes__list {
+    padding-inline-start: 1.2rem;
+  }
+
+  .recipe__back {
+    margin-block: 2.5rem 0;
+    text-align: center;
+  }
+
+  @media (min-width: 640px) {
+    .recipe__actions {
+      flex-direction: row;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .recipe__body {
+      grid-template-columns: minmax(16rem, 1fr) 2fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .recipe__ingredients {
+      position: sticky;
+      top: 1rem;
+      max-height: calc(100dvh - 2rem);
+      overflow-y: auto;
+      padding-inline-end: 0.5rem;
+    }
+  }
+</style>

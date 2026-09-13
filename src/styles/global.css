@@ -1,0 +1,165 @@
+:root {
+  --bg: #faf6ef;
+  --surface: #ffffff;
+  --text: #1f1b16;
+  --muted: #6f655a;
+  --accent: #b5532b;
+  --accent-strong: #99431f;
+  --accent-tint: #f6e6dc;
+  --tint: #f3ecdf;
+  --border: #e6dfd2;
+  --radius: 12px;
+  --font: 'Heebo', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --tap: 44px;
+  --content-max: 68rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.15em;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.25;
+  margin-block: 0 0.5em;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: 1.9rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+}
+
+h3 {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+p,
+ul,
+ol {
+  margin-block: 0 1rem;
+}
+
+.site-header {
+  border-block-end: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.site-header__inner {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+}
+
+.site-title {
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.site-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin-inline: auto;
+  padding: 1.25rem 1rem 2.5rem;
+}
+
+.site-footer {
+  border-block-start: 1px solid var(--border);
+  padding: 1rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  min-height: 48px;
+  width: 100%;
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 500;
+  font-size: 1.05rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+}
+
+.btn--secondary {
+  background: var(--surface);
+  color: var(--accent);
+}
+
+.btn--secondary:hover {
+  background: var(--accent-tint);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.btn:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 640px) {
+  .btn {
+    width: auto;
+  }
+}
+
+/* Numeric ranges and Hebrew-prefixed numbers ("20-30", "כ-30") never break mid-line */
+.num,
+.nobr {
+  white-space: nowrap;
+}
