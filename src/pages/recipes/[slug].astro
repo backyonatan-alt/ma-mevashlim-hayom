@@ -3,6 +3,7 @@ import { getCollection, type CollectionEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Rule from '../../components/Rule.astro';
 import CookMode from '../../components/CookMode.astro';
+import Scaler from '../../components/Scaler.astro';
 import '../../styles/print.css';
 import {
   parseRecipeBody,
@@ -80,6 +81,7 @@ const ingredientId = () => `ing-${++ingredientIndex}`;
         <h2 class="section-title" id="ingredients-title">
           <span class="section-title__emoji" aria-hidden="true">🧺</span>מצרכים
         </h2>
+        <Scaler />
         {parsed.ingredients.map((block: Block) =>
           block.kind === 'heading' ? (
             <h3 class="ingredients__group">{block.text}</h3>

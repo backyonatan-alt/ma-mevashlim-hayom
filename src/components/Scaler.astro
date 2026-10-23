@@ -1,0 +1,248 @@
+---
+/**
+ * Quantity scaler: ½ · 1 · ×2 · ×3 chips above the ingredient list.
+ * Client-side only: parses the leading quantity of each ingredient line
+ * ("200 גרם", "¾ כוס", "1½ כוסות", "2-3 כפות", "חצי כוס", "כ-6 ...") and
+ * rewrites it. Lines with no recognizable leading quantity stay as they are.
+ */
+---
+
+<div class="scaler" data-scaler>
+  <div class="scaler__row">
+    <span class="scaler__label">כמות</span>
+    <div class="scaler__chips" role="group" aria-label="הכפלת כמויות">
+      <button class="scaler__chip" type="button" data-factor="0.5">½</button>
+      <button class="scaler__chip is-active" type="button" data-factor="1" aria-pressed="true">1</button>
+      <button class="scaler__chip" type="button" data-factor="2">×2</button>
+      <button class="scaler__chip" type="button" data-factor="3">×3</button>
+    </div>
+  </div>
+  <p class="scaler__note" hidden>
+    <span class="scaler__note-text"></span>
+    <button class="scaler__reset" type="button">חזרה למקור</button>
+  </p>
+</div>
+
+<style>
+  .scaler {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: -0.25rem 0 1rem;
+  }
+
+  .scaler__row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .scaler__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+
+  .scaler__chips {
+    display: flex;
+    gap: 0.5rem;
+    flex: 1 1 auto;
+  }
+
+  .scaler__chip {
+    flex: 1 1 0;
+    min-height: var(--tap);
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    color: var(--brown-deep);
+    font: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+  }
+
+  .scaler__chip.is-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .scaler__note {
+    margin: 0;
+    padding: 0.5rem 0.8rem;
+    border-radius: 10px;
+    background: var(--tint);
+    color: var(--amber);
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .scaler__note[hidden] {
+    display: none;
+  }
+
+  .scaler__reset {
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.9rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.3rem 0;
+  }
+
+  :global(.checklist__text .scaled) {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  @media print {
+    .scaler__row,
+    .scaler__reset {
+      display: none !important;
+    }
+  }
+</style>
+
+<script>
+  const FR: Record<string, number> = { '½': 0.5, '¼': 0.25, '¾': 0.75, '⅓': 1 / 3, '⅔': 2 / 3, '⅛': 0.125 };
+  const WORDS: Record<string, number> = {
+    'חצי': 0.5,
+    'רבע': 0.25,
+    'שלושת רבעי': 0.75,
+    'שני שליש': 2 / 3,
+    'שליש': 1 / 3,
+  };
+  // singular ↔ plural for the units that appear in the recipes
+  const PAIRS: [string, string][] = [
+    ['כף', 'כפות'],
+    ['כפית', 'כפיות'],
+    ['כוס', 'כוסות'],
+    ['ביצה', 'ביצים'],
+    ['שקית', 'שקיות'],
+    ['חבילה', 'חבילות'],
+    ['מיכל', 'מיכלים'],
+    ['פרוסה', 'פרוסות'],
+    ['יחידה', 'יחידות'],
+    ['שן', 'שיני'],
+  ];
+  const SING = new Map(PAIRS.map(([s, p]) => [p, s]));
+  const PLUR = new Map(PAIRS);
+
+  const LEAD = new RegExp(
+    '^(כ-)?(?:(\\d+(?:[.,]\\d+)?)?\\s*([½¼¾⅓⅔⅛])?|(שלושת רבעי|שני שליש|חצי|רבע|שליש))' +
+      '(?:\\s?[-–]\\s?(\\d+(?:[.,]\\d+)?)?\\s*([½¼¾⅓⅔⅛])?)?(?=\\s|$)',
+  );
+
+  function num(n?: string, f?: string): number | null {
+    if (!n && !f) return null;
+    return (n ? parseFloat(n.replace(',', '.')) : 0) + (f ? FR[f] : 0);
+  }
+
+  // Whole-number quantities of 10 or more (grams, ml, minutes) stay whole.
+  function fmt(q: number, base: number): string {
+    if (base >= 10 && Number.isInteger(base)) return String(Math.round(q));
+    const whole = Math.floor(q + 1e-9);
+    const rem = q - whole;
+    const steps: [number, string][] = [
+      [0, ''],
+      [0.125, '⅛'],
+      [0.25, '¼'],
+      [1 / 3, '⅓'],
+      [0.375, '⅜'],
+      [0.5, '½'],
+      [0.625, '⅝'],
+      [2 / 3, '⅔'],
+      [0.75, '¾'],
+      [0.875, '⅞'],
+      [1, ''],
+    ];
+    let best = steps[0];
+    for (const s of steps) if (Math.abs(rem - s[0]) < Math.abs(rem - best[0])) best = s;
+    if (Math.abs(rem - best[0]) > 0.04) return String(Math.round(q * 10) / 10);
+    let w = whole;
+    let frac = best[1];
+    if (best[0] === 1) {
+      w += 1;
+      frac = '';
+    }
+    if (w === 0) return frac || '0';
+    return frac ? `${w}${frac}` : String(w);
+  }
+
+  function esc(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function fixUnit(rest: string, qty: number): string {
+    const m = rest.match(/^(\s*)([֐-׿"']+)(.*)$/s);
+    if (!m) return rest;
+    const word = m[2];
+    const plural = qty > 1;
+    const swap = plural ? PLUR.get(word) : SING.get(word);
+    return swap ? `${m[1]}${swap}${m[3]}` : rest;
+  }
+
+  type Line = { el: HTMLElement; orig: string; text: string };
+
+  function init(root: HTMLElement) {
+    const section = root.closest('.recipe__ingredients');
+    if (!section) return;
+    const lines: Line[] = Array.from(section.querySelectorAll<HTMLElement>('.checklist__text')).map(
+      (el) => ({ el, orig: el.innerHTML, text: el.textContent?.trim() ?? '' }),
+    );
+    const chips = Array.from(root.querySelectorAll<HTMLButtonElement>('.scaler__chip'));
+    const note = root.querySelector<HTMLElement>('.scaler__note')!;
+    const noteText = root.querySelector<HTMLElement>('.scaler__note-text')!;
+    const reset = root.querySelector<HTMLButtonElement>('.scaler__reset')!;
+
+    function apply(factor: number) {
+      for (const line of lines) {
+        if (factor === 1) {
+          line.el.innerHTML = line.orig;
+          continue;
+        }
+        const m = line.text.match(LEAD);
+        if (!m) {
+          line.el.innerHTML = line.orig;
+          continue;
+        }
+        const approx = m[1] ?? '';
+        const a = m[4] != null ? WORDS[m[4]] : num(m[2], m[3]);
+        const b = num(m[5], m[6]);
+        if (a == null) {
+          line.el.innerHTML = line.orig;
+          continue;
+        }
+        const rest = line.text.slice(m[0].length);
+        const qa = a * factor;
+        const qty = b != null ? `${fmt(qa, a)}-${fmt(b * factor, b)}` : fmt(qa, a);
+        const shown = b != null ? `<span class="num" dir="ltr">${qty}</span>` : qty;
+        line.el.innerHTML =
+          `<span class="scaled nobr">${approx}${shown}</span>` + esc(fixUnit(rest, b != null ? b * factor : qa));
+      }
+      for (const chip of chips) {
+        const on = Number(chip.dataset.factor) === factor;
+        chip.classList.toggle('is-active', on);
+        chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      }
+      note.hidden = factor === 1;
+      noteText.textContent =
+        factor === 0.5
+          ? 'הכמויות חושבו לחצי מתכון. זמני אפייה וגודל תבנית לשיקולכם.'
+          : `הכמויות הוכפלו פי ${factor}. זמני אפייה וגודל תבנית לשיקולכם.`;
+    }
+
+    for (const chip of chips) chip.addEventListener('click', () => apply(Number(chip.dataset.factor)));
+    reset.addEventListener('click', () => apply(1));
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-scaler]').forEach(init);
+</script>
